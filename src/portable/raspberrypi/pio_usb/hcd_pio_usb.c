@@ -39,6 +39,8 @@
 
 #include "host/hcd.h"
 #include "host/usbh.h"
+#include "interval_override.h"
+#include <string.h>
 
 #define RHPORT_OFFSET     1
 #define RHPORT_PIO(_x)    ((_x)-RHPORT_OFFSET)
@@ -117,8 +119,14 @@ bool hcd_edpt_open(uint8_t rhport, uint8_t dev_addr, tusb_desc_endpoint_t const 
   hcd_devtree_get_info(dev_addr, &dev_tree);
   bool const need_pre = (dev_tree.hub_addr && dev_tree.speed == TUSB_SPEED_LOW);
 
+  tusb_desc_endpoint_t ep_copy;
+  memcpy(&ep_copy, desc_ep, sizeof(ep_copy));
+  if (ep_copy.bInterval && interval_override) {
+    ep_copy.bInterval = interval_override;
+  }
+
   uint8_t const pio_rhport = RHPORT_PIO(rhport);
-  return pio_usb_host_endpoint_open(pio_rhport, dev_addr, (uint8_t const *) desc_ep, need_pre);
+  return pio_usb_host_endpoint_open(pio_rhport, dev_addr, (uint8_t const *) &ep_copy, need_pre);
 }
 
 bool hcd_edpt_xfer(uint8_t rhport, uint8_t dev_addr, uint8_t ep_addr, uint8_t *buffer, uint16_t buflen) {
