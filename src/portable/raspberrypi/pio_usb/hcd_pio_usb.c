@@ -121,7 +121,7 @@ bool hcd_edpt_open(uint8_t rhport, uint8_t dev_addr, tusb_desc_endpoint_t const 
 
   tusb_desc_endpoint_t ep_copy;
   memcpy(&ep_copy, desc_ep, sizeof(ep_copy));
-  if (ep_copy.bInterval && interval_override) {
+  if (interval_override != 0) {
     ep_copy.bInterval = interval_override;
   }
 
